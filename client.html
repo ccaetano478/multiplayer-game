@@ -21,10 +21,7 @@
         <canvas id="screen" width="10" height="10"></canvas>
 
         <script>
-            const screen = document.querySelector('#screen');
-            const context = screen.getContext('2d');
-            const currentPlayerId = 'player1';
-
+        
             //CAMADA DO JOGO
             function createGame(){
                 
@@ -36,7 +33,7 @@
                     fruits: {
                         'fruit1': {x: 3, y: 1}
                     }
-                }
+                };
                 
                 function movePlayer(command){
                     
@@ -49,13 +46,13 @@
                         player.y = player.y - 1;
                     }
                     if (keyPressed === "ArrowDown" && player.y + 1 <screen.height){
-                        player.y = player.y + 1
+                        player.y = player.y + 1;
                     }
                     if (keyPressed === "ArrowRight" && player.x + 1 < screen.width){
-                        player.x = player.x + 1
+                        player.x = player.x + 1;
                     }
                     if (keyPressed === "ArrowLeft" && player.x - 1 >= 0){
-                        player.x = player.x - 1
+                        player.x = player.x - 1;
                     }
                 }
                 
@@ -66,22 +63,52 @@
             }
 
             const game = createGame();
-            
+            const keyboardListener = createKeyboardListener();
+            keyboardListener.subscribe(game.movePlayer);
+
             //CAMADA DE INPUT
-            document.addEventListener('keydown', handleKeyDown);
+            function createKeyboardListener() {
 
-            function handleKeyDown (event){
-                const keyPressed = event.key;
+                const state = {
+                    observers: []
+                };
 
-                const command = {
-                    playerId: 'player1',
-                    keyPressed
+                function subscribe(observerFunction){
+                    state.observers.push(observerFunction);
                 }
 
-                game.movePlayer(command);
+                function notifyAll(command){
+                    console.log(`Notifying ${state.observers.length} observers`);
+
+                    for (const observerFunction of state.observers){
+                        observerFunction(command);
+                    }
+                }
+                
+                document.addEventListener('keydown', handleKeyDown);
+    
+                function handleKeyDown (event){
+                    const keyPressed = event.key;
+    
+                    const command = {
+                        playerId: 'player1',
+                        keyPressed
+                    };
+
+                    notifyAll(command);
+                    
+                }
+
+                return{
+                    subscribe
+                }
             }
+            
 
             //CAMADA DE APRESENTAÇÃO
+            const screen = document.querySelector('#screen');
+            const context = screen.getContext('2d');
+            
             renderScreen();
 
             function renderScreen(){
@@ -93,7 +120,7 @@
                     const player = game.state.players[playerId];
 
                     context.fillStyle = 'black';
-                    context.fillRect(player.x, player.y, 1, 1)
+                    context.fillRect(player.x, player.y, 1, 1);
                 }
                 for (fruitId in game.state.fruits){ //acessa as chaves do objeto fruits e salva na variavel fruitId
                     const fruit = game.state.fruits[fruitId];
@@ -102,7 +129,7 @@
                     context.fillRect(fruit.x, fruit.y, 1, 1);
                 }
 
-                requestAnimationFrame(renderScreen)
+                requestAnimationFrame(renderScreen);
             }
 
         </script>
